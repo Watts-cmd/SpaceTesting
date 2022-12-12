@@ -8,6 +8,10 @@ public class SpaceMain {
 		System.out.println("This Will be the main game");
 
 		System.out.println("New Branch?");
+		
+		System.out.println("SO this should now be on main but can I add this and save it on the enw branch?");
+		
+		System.out.println("More work?");
 	}
 
 }
