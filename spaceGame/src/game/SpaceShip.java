@@ -7,6 +7,8 @@ import java.awt.Rectangle;
 public class SpaceShip extends Rectangle {
 	int x,y;
 	int speed;
+	int width = 25;
+	int length = 75;
 
 	SpaceShip(int x, int y){
 	 this.x = x;
