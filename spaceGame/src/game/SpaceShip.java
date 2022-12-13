@@ -6,7 +6,7 @@ import java.awt.Rectangle;
 
 public class SpaceShip extends Rectangle {
 	int x,y;
-	int speed;
+	int speed = 5;
 	int width = 25;
 	int length = 75;
 
