@@ -121,7 +121,7 @@ public class SpaceMain {
 		@Override
 		public void keyPressed(KeyEvent event) {
 			char pressedKey = event.getKeyChar();
-
+			
 			//Moving the ship
 			if (pressedKey == 'd') { player.x += player.speed; }
 			if (pressedKey == 'a') { player.x -= player.speed; }
