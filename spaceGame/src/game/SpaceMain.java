@@ -1,6 +1,6 @@
 package game;
 //Justin Watts ~ Dec. 12, 2022
-//Making an asteroid style space game
+//Making a Galaga style space game
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -25,9 +25,12 @@ public class SpaceMain {
 
 	Timer paintTimer = new Timer(10, new PTimer());
 	SpaceShip player = new SpaceShip(50,50);
-	
+
 	ArrayList<Laser> laserList = new ArrayList<Laser>();
-	int MAXLASERS = 6;
+	final int MAXLASERS = 6;
+	long cooldown = 400;
+	long lastShot;
+
 
 	static final int PANW = 700;
 	static final int PANH = 700;
@@ -64,6 +67,12 @@ public class SpaceMain {
 		for (int i = 0; i < laserList.size(); i++) {
 			Laser b = laserList.get(i);
 			b.x += b.speed;
+
+			//Removing laser when off the screen
+			if (b.x > PANW) {
+				laserList.remove(i);
+				i =- 1;
+			}
 		}
 	}
 
@@ -121,11 +130,15 @@ public class SpaceMain {
 
 			//Making the laser
 			if (pressedKey == ' ' && laserList.size() < MAXLASERS) {
-				int laserX = (player.x + player.length + Laser.length);
-				int laserY = (player.y + player.width/2 - Laser.width/2);
-				Laser b = new Laser(laserX,laserY);
 
-				laserList.add(b);
+				if ((System.currentTimeMillis() - lastShot) >= cooldown ) {
+					int laserX = (player.x + player.length + Laser.length);
+					int laserY = (player.y + player.width/2 - Laser.width/2);
+					Laser b = new Laser(laserX,laserY);
+
+					laserList.add(b);
+					lastShot = System.currentTimeMillis();
+				}
 			}
 		}
 	}
