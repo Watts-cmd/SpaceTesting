@@ -18,6 +18,7 @@ import javax.swing.Timer;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 
 public class SpaceMain {
@@ -25,6 +26,7 @@ public class SpaceMain {
 
 	Timer paintTimer = new Timer(10, new PTimer());
 	SpaceShip player = new SpaceShip(50,50);
+	BetterKeyListener bkl = new BetterKeyListener();
 
 	ArrayList<Laser> laserList = new ArrayList<Laser>();
 	final int MAXLASERS = 6;
@@ -55,7 +57,7 @@ public class SpaceMain {
 
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.add(pan);
-		window.addKeyListener(new MKeyListener());
+		window.addKeyListener(bkl);
 		window.pack();
 		window.setLocationRelativeTo(null); // Center on the screen
 		window.setVisible(true);
@@ -68,6 +70,7 @@ public class SpaceMain {
 			Laser b = laserList.get(i);
 			b.x += b.speed;
 
+			
 			//Removing laser when off the screen
 			if (b.x > PANW) {
 				laserList.remove(i);
@@ -75,6 +78,27 @@ public class SpaceMain {
 			}
 		}
 	}
+
+	void moveShip() {
+		if (bkl.isKeyDown('D')) { player.x += player.speed; }
+		if (bkl.isKeyDown('A')) { player.x -= player.speed; }
+		if (bkl.isKeyDown('W')) { player.y -= player.speed; }
+		if (bkl.isKeyDown('S')) { player.y += player.speed; }
+
+		//Making the laser
+		if (bkl.isKeyDown(' ') && laserList.size() < MAXLASERS) {
+
+			if ((System.currentTimeMillis() - lastShot) >= cooldown ) {
+				int laserX = (player.x + player.length + Laser.length);
+				int laserY = (player.y + player.width/2 - Laser.width/2);
+				Laser b = new Laser(laserX,laserY);
+
+				laserList.add(b);
+				lastShot = System.currentTimeMillis();
+			}
+		}
+	}
+
 
 
 	@SuppressWarnings("serial")
@@ -108,6 +132,7 @@ public class SpaceMain {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			moveShip();
 			calculateLaser();
 			pan.repaint();
 		}		
@@ -116,30 +141,29 @@ public class SpaceMain {
 
 	//Checks what keys are pressed
 	//TODO: not optimal way of checked key presses, use some other utility but keep interior methods
-	class MKeyListener extends KeyAdapter {
-
-		@Override
-		public void keyPressed(KeyEvent event) {
-			char pressedKey = event.getKeyChar();
-			
-			//Moving the ship
-			if (pressedKey == 'd') { player.x += player.speed; }
-			if (pressedKey == 'a') { player.x -= player.speed; }
-			if (pressedKey == 'w') { player.y -= player.speed; }
-			if (pressedKey == 's') { player.y += player.speed; }
-
-			//Making the laser
-			if (pressedKey == ' ' && laserList.size() < MAXLASERS) {
-
-				if ((System.currentTimeMillis() - lastShot) >= cooldown ) {
-					int laserX = (player.x + player.length + Laser.length);
-					int laserY = (player.y + player.width/2 - Laser.width/2);
-					Laser b = new Laser(laserX,laserY);
-
-					laserList.add(b);
-					lastShot = System.currentTimeMillis();
-				}
-			}
-		}
-	}
+	//Since this is a general class, I'm not going to have it move the player etc.
+	//We'll have to use a Timer to check if the keys are pressed.
+	
+	
+	//			char pressedKey = event.getKeyChar();
+	//			
+	//			//Moving the ship
+	//			if (pressedKey == 'd') { player.x += player.speed; }
+	//			if (pressedKey == 'a') { player.x -= player.speed; }
+	//			if (pressedKey == 'w') { player.y -= player.speed; }
+	//			if (pressedKey == 's') { player.y += player.speed; }
+	//
+	//			//Making the laser
+	//			if (pressedKey == ' ' && laserList.size() < MAXLASERS) {
+	//
+	//				if ((System.currentTimeMillis() - lastShot) >= cooldown ) {
+	//					int laserX = (player.x + player.length + Laser.length);
+	//					int laserY = (player.y + player.width/2 - Laser.width/2);
+	//					Laser b = new Laser(laserX,laserY);
+	//
+	//					laserList.add(b);
+	//					lastShot = System.currentTimeMillis();
+	//				}
+	//			}
 }
+
