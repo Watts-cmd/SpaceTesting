@@ -1,31 +1,24 @@
-import java.awt.event.KeyAdapter;
+package game;
+
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
-//Checks what keys are pressed
-	//TODO: not optimal way of checked key presses, use some other utility but keep interior methods
-	class MKeyListener extends KeyAdapter {
+public class BetterKeyListener implements KeyListener {
+	private boolean keysDown[] = new boolean[256];
 
-		@Override
-		public void keyPressed(KeyEvent event) {
-			char pressedKey = event.getKeyChar();
-			
-			//Moving the ship
-			if (pressedKey == 'd') { player.x += player.speed; }
-			if (pressedKey == 'a') { player.x -= player.speed; }
-			if (pressedKey == 'w') { player.y -= player.speed; }
-			if (pressedKey == 's') { player.y += player.speed; }
-
-			//Making the laser
-			if (pressedKey == ' ' && laserList.size() < MAXLASERS) {
-
-				if ((System.currentTimeMillis() - lastShot) >= cooldown ) {
-					int laserX = (player.x + player.length + Laser.length);
-					int laserY = (player.y + player.width/2 - Laser.width/2);
-					Laser b = new Laser(laserX,laserY);
-
-					laserList.add(b);
-					lastShot = System.currentTimeMillis();
-				}
-			}
-		}
+	public boolean isKeyDown(int key) {
+		return keysDown[key];
 	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {			
+		if (e.getKeyCode() < 256) keysDown[e.getKeyCode()] = true;
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		if (e.getKeyCode() < 256) keysDown[e.getKeyCode()] = false;
+	}
+
+	public void keyTyped(KeyEvent e) {}
+}
