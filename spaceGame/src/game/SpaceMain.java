@@ -16,15 +16,13 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-
 
 public class SpaceMain {
 
 
 	Timer paintTimer = new Timer(10, new PTimer());
+	//Timer enemySpawn = new Timer(2000, new SpawnTimer());
+	
 	SpaceShip player = new SpaceShip(50,50);
 	BetterKeyListener bkl = new BetterKeyListener();
 
@@ -33,6 +31,8 @@ public class SpaceMain {
 	long cooldown = 400;
 	long lastShot;
 
+	ArrayList<SpaceShip> shipList = new ArrayList<SpaceShip>();
+	final int MAXSHIPS = 4;
 
 	static final int PANW = 700;
 	static final int PANH = 700;
@@ -62,20 +62,44 @@ public class SpaceMain {
 		window.setLocationRelativeTo(null); // Center on the screen
 		window.setVisible(true);
 		paintTimer.start();
+		//enemySpawn.start();
+		shipList.add(new SpaceShip(600,600));
 	}
 
 	//method that moves the lasers
 	void calculateLaser() {
 		for (int i = 0; i < laserList.size(); i++) {
-			Laser b = laserList.get(i);
-			b.x += b.speed;
+			Laser tempLaser = laserList.get(i);
+			tempLaser.x += tempLaser.speed;
 
-			
+
 			//Removing laser when off the screen
-			if (b.x > PANW) {
+			if (tempLaser.x > PANW) {
 				laserList.remove(i);
-				i =- 1;
+				i --;
 			}
+
+			//Removing the enemy ship and laser if the laser touches it
+			for (int k = 0; k < shipList.size(); k++) {
+				SpaceShip tempShip = shipList.get(k);
+				if (tempLaser.intersects(tempShip)) {
+					laserList.remove(i);
+					shipList.remove(k);
+					i--;
+					k--;
+				}
+			}
+		}
+	}
+
+	void calculateEnemies() {
+		for (int i = 0; i < shipList.size(); i++) {
+			SpaceShip b = shipList.get(i);
+			if (b.y <= 0) b.speed = 1;
+			if (b.y >= PANH) b.speed = -1;
+			if (b.y == 600) b.speed = 0;
+			
+			b.y += b.speed;
 		}
 	}
 
@@ -89,7 +113,7 @@ public class SpaceMain {
 		if (bkl.isKeyDown(' ') && laserList.size() < MAXLASERS) {
 
 			if ((System.currentTimeMillis() - lastShot) >= cooldown ) {
-				int laserX = (player.x + player.length + Laser.length);
+				int laserX = (player.x + player.height + Laser.height);
 				int laserY = (player.y + player.width/2 - Laser.width/2);
 				Laser b = new Laser(laserX,laserY);
 
@@ -116,12 +140,18 @@ public class SpaceMain {
 
 			//Drawing the player ship
 			g2.setColor(Color.RED);
-			g2.fillRect(player.x, player.y, player.length, player.width);
+			g2.fillRect(player.x, player.y, player.height, player.width);
 
 			//Drawing the player lasers
 			g2.setColor(Color.BLUE);
 			for (Laser b : laserList) {
-				g2.fillRect(b.x, b.y, Laser.length, Laser.width);
+				g2.fillRect(b.x, b.y, Laser.height, Laser.width);
+			}
+			
+			//Drawing the enemy ship
+			g2.setColor(Color.MAGENTA);
+			for (SpaceShip b : shipList) {
+				g2.fillRect(b.x, b.y, b.height, b.width);
 			}
 		}
 	}
@@ -133,37 +163,19 @@ public class SpaceMain {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			moveShip();
+			calculateEnemies();
 			calculateLaser();
 			pan.repaint();
 		}		
 	}
 
+	//Timer that spawns the enemies
+	class SpawnTimer implements ActionListener {
 
-	//Checks what keys are pressed
-	//TODO: not optimal way of checked key presses, use some other utility but keep interior methods
-	//Since this is a general class, I'm not going to have it move the player etc.
-	//We'll have to use a Timer to check if the keys are pressed.
-	
-	
-	//			char pressedKey = event.getKeyChar();
-	//			
-	//			//Moving the ship
-	//			if (pressedKey == 'd') { player.x += player.speed; }
-	//			if (pressedKey == 'a') { player.x -= player.speed; }
-	//			if (pressedKey == 'w') { player.y -= player.speed; }
-	//			if (pressedKey == 's') { player.y += player.speed; }
-	//
-	//			//Making the laser
-	//			if (pressedKey == ' ' && laserList.size() < MAXLASERS) {
-	//
-	//				if ((System.currentTimeMillis() - lastShot) >= cooldown ) {
-	//					int laserX = (player.x + player.length + Laser.length);
-	//					int laserY = (player.y + player.width/2 - Laser.width/2);
-	//					Laser b = new Laser(laserX,laserY);
-	//
-	//					laserList.add(b);
-	//					lastShot = System.currentTimeMillis();
-	//				}
-	//			}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (MAXSHIPS > shipList.size()) shipList.add(new SpaceShip (600,400));
+		}		
+	}
 }
 
