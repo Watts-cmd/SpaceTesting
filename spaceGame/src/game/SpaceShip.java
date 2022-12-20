@@ -6,13 +6,15 @@ import java.awt.Rectangle;
 //Justin Watts ~ Dec. 13, 2022
 
 public class SpaceShip extends Rectangle {
-	int x,y;
 	int speed = 5;
-	int width = 25;
-	int height = 75;
+	int shootChance;
 
 	SpaceShip(int x, int y){
-	 this.x = x;
-	 this.y = y;
+		
+		shootChance =  (int) (Math.random()*50+1);
+		width = 60;
+		height = 25;
+		this.x = x;
+		this.y = y;
 	}
 }
