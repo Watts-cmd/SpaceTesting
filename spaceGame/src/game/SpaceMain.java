@@ -1,5 +1,5 @@
 package game;
-//Justin Watts ~ Dec. 12, 2022
+//Watts ~ Dec. 12, 2022
 //Making a Galaga style space game
 
 import java.awt.Color;
@@ -21,13 +21,14 @@ public class SpaceMain {
 
 
 	Timer paintTimer = new Timer(10, new PTimer());
-	//Timer enemySpawn = new Timer(2000, new SpawnTimer());
-	
+	Timer enemySpawn = new Timer(2000, new SpawnTimer());
+
 	SpaceShip player = new SpaceShip(50,50);
 	BetterKeyListener bkl = new BetterKeyListener();
 
 	ArrayList<Laser> laserList = new ArrayList<Laser>();
 	final int MAXLASERS = 6;
+	int playerLaserAmt = 0;
 	long cooldown = 400;
 	long lastShot;
 
@@ -62,8 +63,8 @@ public class SpaceMain {
 		window.setLocationRelativeTo(null); // Center on the screen
 		window.setVisible(true);
 		paintTimer.start();
-		//enemySpawn.start();
-		shipList.add(new SpaceShip(600,600));
+		enemySpawn.start();
+
 	}
 
 	//method that moves the lasers
@@ -75,6 +76,7 @@ public class SpaceMain {
 
 			//Removing laser when off the screen
 			if (tempLaser.x > PANW) {
+				if (tempLaser.playerLaser) playerLaserAmt--;
 				laserList.remove(i);
 				i --;
 			}
@@ -82,24 +84,38 @@ public class SpaceMain {
 			//Removing the enemy ship and laser if the laser touches it
 			for (int k = 0; k < shipList.size(); k++) {
 				SpaceShip tempShip = shipList.get(k);
+
 				if (tempLaser.intersects(tempShip)) {
+
+					if (tempLaser.playerLaser) playerLaserAmt--;
 					laserList.remove(i);
 					shipList.remove(k);
-					i--;
-					k--;
 				}
 			}
 		}
 	}
 
 	void calculateEnemies() {
+		int shootChance =  (int) (Math.random()*50+1);
+
 		for (int i = 0; i < shipList.size(); i++) {
-			SpaceShip b = shipList.get(i);
-			if (b.y <= 0) b.speed = 1;
-			if (b.y >= PANH) b.speed = -1;
-			if (b.y == 600) b.speed = 0;
-			
-			b.y += b.speed;
+
+			//Moving the ship
+			SpaceShip tempShip = shipList.get(i);
+			if (tempShip.y <= 0) tempShip.speed *= -1;
+			if (tempShip.y >= PANH) tempShip.speed *= -1;
+
+			tempShip.y += tempShip.speed;
+
+			//Shooting lasers
+			if (tempShip.shootChance == shootChance ) {
+				int laserX = (tempShip.x  - Laser.LASERWIDTH);
+				int laserY = (tempShip.y + tempShip.height/2 - Laser.LASERHEIGHT/2);
+				Laser tempLaser = new Laser(laserX,laserY, false);
+				tempLaser.speed *= -1;
+
+				laserList.add(tempLaser);
+			}
 		}
 	}
 
@@ -110,13 +126,14 @@ public class SpaceMain {
 		if (bkl.isKeyDown('S')) { player.y += player.speed; }
 
 		//Making the laser
-		if (bkl.isKeyDown(' ') && laserList.size() < MAXLASERS) {
+		if (bkl.isKeyDown(' ') && playerLaserAmt < MAXLASERS) {
 
 			if ((System.currentTimeMillis() - lastShot) >= cooldown ) {
-				int laserX = (player.x + player.height + Laser.height);
-				int laserY = (player.y + player.width/2 - Laser.width/2);
-				Laser b = new Laser(laserX,laserY);
+				int laserX = (player.x + player.width + Laser.LASERWIDTH);
+				int laserY = (player.y + player.height/2 - Laser.LASERHEIGHT/2);
+				Laser b = new Laser(laserX,laserY, true);
 
+				playerLaserAmt++;
 				laserList.add(b);
 				lastShot = System.currentTimeMillis();
 			}
@@ -140,18 +157,19 @@ public class SpaceMain {
 
 			//Drawing the player ship
 			g2.setColor(Color.RED);
-			g2.fillRect(player.x, player.y, player.height, player.width);
+			g2.fillRect(player.x, player.y, player.width, player.height);
 
-			//Drawing the player lasers
-			g2.setColor(Color.BLUE);
+			//Drawing the lasers
 			for (Laser b : laserList) {
-				g2.fillRect(b.x, b.y, Laser.height, Laser.width);
+				if (b.playerLaser) g2.setColor(Color.RED);
+				else g2.setColor(Color.MAGENTA);
+				g2.fillRect(b.x, b.y, Laser.LASERWIDTH, Laser.LASERHEIGHT);
 			}
-			
+
 			//Drawing the enemy ship
 			g2.setColor(Color.MAGENTA);
 			for (SpaceShip b : shipList) {
-				g2.fillRect(b.x, b.y, b.height, b.width);
+				g2.fillRect(b.x, b.y, b.width, b.height);
 			}
 		}
 	}
@@ -174,7 +192,7 @@ public class SpaceMain {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (MAXSHIPS > shipList.size()) shipList.add(new SpaceShip (600,400));
+			if (MAXSHIPS > shipList.size()) shipList.add(new SpaceShip (600, (int) (Math.random()*PANH+1)));
 		}		
 	}
 }
